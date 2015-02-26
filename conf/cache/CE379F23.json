@@ -1,0 +1,217 @@
+{
+  "attitudepid": {
+    "kp_yaw": {
+      "ident": 19, 
+      "group": "attitudepid", 
+      "name": "kp_yaw", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kp_pitch": {
+      "ident": 16, 
+      "group": "attitudepid", 
+      "name": "kp_pitch", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kp_roll": {
+      "ident": 13, 
+      "group": "attitudepid", 
+      "name": "kp_roll", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "ki_roll": {
+      "ident": 14, 
+      "group": "attitudepid", 
+      "name": "ki_roll", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kd_roll": {
+      "ident": 15, 
+      "group": "attitudepid", 
+      "name": "kd_roll", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "ki_pitch": {
+      "ident": 17, 
+      "group": "attitudepid", 
+      "name": "ki_pitch", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kd_pitch": {
+      "ident": 18, 
+      "group": "attitudepid", 
+      "name": "kd_pitch", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "ki_yaw": {
+      "ident": 20, 
+      "group": "attitudepid", 
+      "name": "ki_yaw", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kd_yaw": {
+      "ident": 21, 
+      "group": "attitudepid", 
+      "name": "kd_yaw", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }
+  }, 
+  "cpu": {
+    "flash": {
+      "ident": 0, 
+      "group": "cpu", 
+      "name": "flash", 
+      "pytype": "<H", 
+      "__class__": "ParamTocElement", 
+      "ctype": "uint16_t", 
+      "access": 0
+    }, 
+    "id2": {
+      "ident": 3, 
+      "group": "cpu", 
+      "name": "id2", 
+      "pytype": "<L", 
+      "__class__": "ParamTocElement", 
+      "ctype": "uint32_t", 
+      "access": 0
+    }, 
+    "id0": {
+      "ident": 1, 
+      "group": "cpu", 
+      "name": "id0", 
+      "pytype": "<L", 
+      "__class__": "ParamTocElement", 
+      "ctype": "uint32_t", 
+      "access": 0
+    }, 
+    "id1": {
+      "ident": 2, 
+      "group": "cpu", 
+      "name": "id1", 
+      "pytype": "<L", 
+      "__class__": "ParamTocElement", 
+      "ctype": "uint32_t", 
+      "access": 0
+    }
+  }, 
+  "ratepid": {
+    "kp_yaw": {
+      "ident": 10, 
+      "group": "ratepid", 
+      "name": "kp_yaw", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kp_pitch": {
+      "ident": 7, 
+      "group": "ratepid", 
+      "name": "kp_pitch", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kp_roll": {
+      "ident": 4, 
+      "group": "ratepid", 
+      "name": "kp_roll", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "ki_roll": {
+      "ident": 5, 
+      "group": "ratepid", 
+      "name": "ki_roll", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kd_roll": {
+      "ident": 6, 
+      "group": "ratepid", 
+      "name": "kd_roll", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "ki_pitch": {
+      "ident": 8, 
+      "group": "ratepid", 
+      "name": "ki_pitch", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kd_pitch": {
+      "ident": 9, 
+      "group": "ratepid", 
+      "name": "kd_pitch", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "ki_yaw": {
+      "ident": 11, 
+      "group": "ratepid", 
+      "name": "ki_yaw", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }, 
+    "kd_yaw": {
+      "ident": 12, 
+      "group": "ratepid", 
+      "name": "kd_yaw", 
+      "pytype": "<f", 
+      "__class__": "ParamTocElement", 
+      "ctype": "float", 
+      "access": 0
+    }
+  }, 
+  "stabilizer": {
+    "initStatus": {
+      "ident": 22, 
+      "group": "stabilizer", 
+      "name": "initStatus", 
+      "pytype": "<B", 
+      "__class__": "ParamTocElement", 
+      "ctype": "uint8_t", 
+      "access": 0
+    }
+  }
+}

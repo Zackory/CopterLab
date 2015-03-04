@@ -46,7 +46,7 @@ class NatNet():
                     # copter.updateTracking(framenum,bodies[0]["pos"],bodies[0]["orient"])
                     copter.updateTracking(framenum, bodies, unknown)
             except socket.timeout:
-                print 'pinging'
+                # print 'pinging'
                 req = struct.pack("@hh", self.NAT_PING, 0)
                 s.sendto(req, (self.SERVER_ADDRESS, self.CMD_PORT))
 

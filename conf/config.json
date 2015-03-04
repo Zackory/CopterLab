@@ -5,18 +5,18 @@
     "Sony PLAYSTATION(R)3 Controller": "PS3_Mode_1", 
     "VirtualBox USB Tablet": "PS3_Mode_2"
   }, 
-  "slew_rate": 47.0, 
+  "slew_rate": 0.0, 
   "client_side_xmode": false, 
   "auto_reconnect": false, 
   "input_device": "SZMY-POWER CO.,LTD. GAMEPAD 3 TURBO", 
-  "link_uri": "radio://0/74/2M", 
+  "link_uri": "debug://0/0", 
   "max_yaw": 200, 
   "flightmode": "Advanced", 
   "max_rp": 30, 
-  "open_tabs": "Auto Flight Control,Super Flight", 
+  "open_tabs": "Super Flight,Auto Flight Control,Quadrotor", 
   "trim_pitch": -2.7755575615628914e-16, 
-  "slew_limit": 45.0, 
+  "slew_limit": 0.0, 
   "trim_roll": 0.0, 
-  "max_thrust": 90.0, 
-  "min_thrust": 25.0
+  "max_thrust": 100.0, 
+  "min_thrust": 0.0
 }

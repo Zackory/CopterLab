@@ -154,7 +154,7 @@
      <x>470</x>
      <y>60</y>
      <width>233</width>
-     <height>80</height>
+     <height>101</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -222,6 +222,13 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="orientation">
+      <property name="text">
+       <string>yaw: 0 pitch: 0 roll: 0</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -313,6 +320,19 @@
    </property>
    <property name="text">
     <string>Reset Target</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="barrelRoll">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>120</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Barrel Roll</string>
    </property>
   </widget>
  </widget>

@@ -49,15 +49,15 @@ logger = logging.getLogger(__name__)
 flight_tab_class = uic.loadUiType(sys.path[0] + "/cfclient/ui/tabs/copterTab.ui")[0]
 
 MAX_THRUST = 65365.0
-# MAX_THRUST = 59482.0
 
 from .copter.Vector import Vector
 from .copter.TelemetryLogger import TelemetryLogger
 from .copter.Rotor import Rotor
+from .copter.PIDrotor import PIDrotor
 from .copter.NatNet import NatNet
 
 teleLog = TelemetryLogger()
-copter = Rotor()
+copter = PIDrotor()
 natnet = NatNet()
 
 
@@ -139,10 +139,8 @@ class CopterTab(Tab, flight_tab_class):
         self._motor_data_signal.connect(self._motor_data_received)
 
         # Connect UI signals that are in this tab
-        self.isInCrazyFlightmode = False
-
-
         self.launchButton.clicked.connect(self.launchButtonClick)
+        self.barrelRoll.clicked.connect(self.barrelRollClick)
         self.thrustEntry.valueChanged.connect(self.thrustChanged)
         self.targetX.valueChanged.connect(self.targetXChanged)
         self.targetY.valueChanged.connect(self.targetYChanged)
@@ -150,6 +148,19 @@ class CopterTab(Tab, flight_tab_class):
         self.resetTarget.clicked.connect(self.resetTargetClick)
 
         self.lastUIUpdate = time()
+        self.isConnected = False
+
+        # Reset Config settings
+        # Config().set('min_thrust', 0.0)
+        # Config().set('max_thrust', 100.0)
+        # Config().set("slew_limit", 0)
+        # Config().set("slew_rate", 0)
+        # Config().set("max_yaw", 200)
+        # Config().set("max_rp", 30)
+        # Config().set("trim_pitch", 0)
+        # Config().set("trim_roll", 0)
+        # Config().set("flightmode", 'Client X-mode')
+        # Config().set("client_side_xmode", True)
 
         """
           ADDITION: replace joy stick object's input device with our wrapper class
@@ -160,6 +171,13 @@ class CopterTab(Tab, flight_tab_class):
         w.automode = True
         self.helper.inputDeviceReader.inputdevice = w
 
+        self.helper.inputDeviceReader.updateMinMaxThrustSignal.emit(0, MAX_THRUST)
+        self.helper.inputDeviceReader.updateThrustLoweringSlewrateSignal.emit(0, 0)
+        self.helper.inputDeviceReader.updateMaxYawRateSignal.emit(200)
+        self.helper.inputDeviceReader.updateMaxRPAngleSignal.emit(30)
+        self.helper.inputDeviceReader.update_trim_pitch_signal.emit(0)
+        self.helper.inputDeviceReader.update_trim_roll_signal.emit(0)
+
         """
           ADDITION: create thread to run command socket
         """
@@ -167,36 +185,47 @@ class CopterTab(Tab, flight_tab_class):
         cmdthread.setDaemon(True)
         cmdthread.start()
 
-    # Received values must be in percentage (%) between -100% and 100%
-    def alterCopter(self, thrust, roll=None, pitch=None, yaw=None):
+    # Received thrust must be in percentage (%) between 0% and 100%
+    def alterThrust(self, thrust):
+        if not self.isConnected:
+            self.thrustEntry.setValue(0)
+            return
+
         global copter
         copter.targetThrust = thrust / 100.0
         self.thrustEntry.setValue(thrust)
-        print 'Thrust', thrust
-        if roll is not None:
-            copter.targetRoll = roll
-        if pitch is not None:
-            copter.targetPitch = pitch
-        if yaw is not None:
-            copter.targetYaw = yaw
+        print 'Thrust changed to:', thrust
 
     @pyqtSlot()
     def launchButtonClick(self):
+        if not self.isConnected:
+            return
+
         global copter
         if copter.targetThrust > 0:
-            self.alterCopter(0, 0, 0, 0)
+            self.alterThrust(0)
         else:
-            self.alterCopter(10, 0, 0, 0)
+            self.alterThrust(75)
             self.resetTargetClick()
         # self.helper.inputDeviceReader.inputdevice.automode = not self.helper.inputDeviceReader.inputdevice.automode
+
+    @pyqtSlot()
+    def barrelRollClick(self):
+        global copter
+        copter.performBarrelRoll()
 
     @pyqtSlot()
     def resetTargetClick(self):
         global copter
         copter.resetTarget()
+        copter.yawOffset = copter.trackerYPR[0] - copter.yaw
         self.targetX.setValue(copter.targetPosition.x)
         self.targetY.setValue(copter.targetPosition.y)
-        self.targetZ.setValue(copter.targetPosition.z)
+        # self.targetY.setValue(copter.targetPosition.y + 0.4)
+        # self.targetYChanged()
+        # self.targetZ.setValue(copter.targetPosition.z)
+        self.targetZ.setValue(copter.targetPosition.z + 0.4)
+        self.targetZChanged()
 
     @pyqtSlot()
     def targetXChanged(self):
@@ -215,7 +244,7 @@ class CopterTab(Tab, flight_tab_class):
 
     @pyqtSlot()
     def thrustChanged(self):
-        self.alterCopter(self.thrustEntry.value())
+        self.alterThrust(self.thrustEntry.value())
 
     def thrustToPercentage(self, thrust):
         return ((thrust / MAX_THRUST) * 100.0)
@@ -226,11 +255,10 @@ class CopterTab(Tab, flight_tab_class):
     def _motor_data_received(self, data):
         global copter
         copter.motors = (data[k] for k in ('motor.m1', 'motor.m2', 'motor.m3', 'motor.m4'))
-        # copter.motors = dict((k, data[k]) for k in ('motor.m1', 'motor.m2', 'motor.m3', 'motor.m4'))
 
     def _imu_data_received(self, data):
         global copter
-        copter.thrust = data["stabilizer.thrust"]
+        copter.thrust = self.thrustToPercentage(data["stabilizer.thrust"])/100.0
         copter.roll = data["stabilizer.roll"]
         copter.pitch = data["stabilizer.pitch"]
         copter.yaw = data["stabilizer.yaw"]
@@ -239,7 +267,6 @@ class CopterTab(Tab, flight_tab_class):
         self.actualRoll.setText(('%.2f' % data["stabilizer.roll"]))
         self.actualPitch.setText(('%.2f' % data["stabilizer.pitch"]))
         self.actualYaw.setText(('%.2f' % data["stabilizer.yaw"]))
-        # self.alterCopter(data["stabilizer.thrust"], data["stabilizer.roll"], data["stabilizer.pitch"], data["stabilizer.yaw"])
 
     """
       original
@@ -249,6 +276,7 @@ class CopterTab(Tab, flight_tab_class):
         logger.warning("Callback of error in LogEntry :(")
 
     def connected(self, linkURI):
+        self.isConnected = True
         lg = LogConfig("Stabalizer", 100)
         lg.addVariable(LogVariable("stabilizer.roll", "float"))
         lg.addVariable(LogVariable("stabilizer.pitch", "float"))
@@ -279,13 +307,8 @@ class CopterTab(Tab, flight_tab_class):
             logger.warning("Could not setup logconfiguration after "
                            "connection!")
 
-        # Reset Config settings
-        Config().set('min_thrust', 0.0)
-        Config().set('max_thrust', 100.0)
-
-
     def disconnected(self, linkURI):
-        return
+        self.isConnected = False
 
     def calUpdateFromInput(self, rollCal, pitchCal):
         logger.debug("Trim changed on joystick: roll=%.2f, pitch=%.2f",
@@ -306,3 +329,10 @@ class CopterTab(Tab, flight_tab_class):
         self.trackerX.setText('%.3f' % copter.trackerPosition.x)
         self.trackerY.setText('%.3f' % copter.trackerPosition.y)
         self.trackerZ.setText('%.3f' % copter.trackerPosition.z)
+
+        self.orientation.setText("yaw: %.1f pitch: %.1f roll: %.1f" % copter.trackerYPR)
+
+        self.targetX.setValue(copter.targetPosition.x)
+        self.targetY.setValue(copter.targetPosition.y)
+        self.targetZ.setValue(copter.targetPosition.z)
+

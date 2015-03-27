@@ -26,7 +26,10 @@ class PIDrotor():
         self.currentThrust = 0
         self.lastTime = 0
         self.prevThrusts = [0]*25
-        self.prevLoc = 0
+        self.thrustCount = 0
+        self.decreaseThrust = 0
+        self.prevLocations = [Vector((0, 0, 0))]*25
+        self.locCount = 0
 
         # Tracker variables
         self.trackerFrame = 0
@@ -46,7 +49,9 @@ class PIDrotor():
         self.logCount = 0
 
     def calculateControl(self):
-        if self.targetThrust == 0 and self.prevThrust == 0:
+        if self.targetThrust == 0 and self.averageThrust() == 0:
+            # No target thrust and the copter isn't currently moving.
+            # Return all zeros
             if self.logFile is not None:
                 self.logFile.close()
                 self.logFile = None
@@ -61,6 +66,12 @@ class PIDrotor():
             absoluteName = os.path.join(os.path.dirname(__file__), filename)
             self.logFile = open(absoluteName, 'w+')
 
+        if self.targetThrust == 0 and self.decreaseThrust == 0:
+            # User has requested to land.
+            # We're going to be decreasing thrust now.
+            # Save the current thrust for use as a baseline for the PID controller.
+            self.decreaseThrust = self.averageThrust()
+
         # PID Controller
         kp = 1.0
         ki = 0.01
@@ -74,7 +85,7 @@ class PIDrotor():
         derivative = (error - self.prevError) * (1.0/dt)
         self.prevError = error
 
-        print 'Error:', error, 'Integral:', self.integral, 'Derivative:', derivative
+        # print 'Error:', error, 'Integral:', self.integral, 'Derivative:', derivative
 
         # pid controller calculation
         # proportional: standard error that does most of the work
@@ -87,43 +98,32 @@ class PIDrotor():
         # sin = math.sin(math.radians(self.yaw))
         cos = math.cos(math.radians(self.trackerYPR[0]))
         sin = math.sin(math.radians(self.trackerYPR[0]))
-        roll = r.y*cos + r.x*sin
-        pitch = r.y*cos - r.x*sin
-        # roll = r.x*cos + r.y*sin
-        # pitch = -r.x*sin + r.y*cos
-        # if self.targetThrust == 0:
-            # This must be replaced with a slow downward trajectory using a PID controller
-            # This adjusts thrust for a smooth landing
-            # thrust = self.averageThrust() * slowDownExp
-        # else :
+        roll = -r.x*cos - r.y*sin
+        pitch = -r.x*sin + r.y*cos
         if self.targetThrust != 0:
             thrust = self.targetThrust + r.z
         else:
-            thrust = self.averageThrust() + r.z
+            thrust = self.decreaseThrust + r.z
 
+        # Place bounds on max values
         thrust = self.constrain(thrust, 0.0, 1.0)
         roll = self.constrain(roll, -0.8, 0.8)
         pitch = self.constrain(pitch, -0.8, 0.8)
 
         self.prevThrust = thrust
 
-        if self.targetThrust != 0:
-            self.updatePrevValues()
-        elif self.averageThrust() > 0.2:
-            self.targetPosition = self.targetPosition - Vector((0, 0, 0.001))
-        else:
+        self.updatePrevValues()
+
+        # Smooth landing
+        if self.targetThrust == 0 and self.averageThrust() > 0.2:
+            # Decrease target z location at each step until we reach the ground
+            self.targetPosition = self.targetPosition - Vector((0, 0, 0.003))
+        elif self.targetThrust == 0:
+            # Ground reached, reset all variables
             thrust = 0
             self.prevThrust = 0
+            self.decreaseThrust = 0
             self.resetPrevValues()
-
-        # self.updatePrevValues()
-        #
-        # if self.targetThrust == 0 and self.averageThrust() > 0.2:
-        #     self.targetPosition = self.targetPosition - Vector((0, 0, 0.001))
-        # elif self.targetThrust == 0:
-        #     thrust = 0
-        #     self.prevThrust = 0
-        #     self.resetPrevValues()
 
         # Log data
         if self.logCount % 5 == 0:
@@ -139,15 +139,26 @@ class PIDrotor():
         return tuple(float('{0:.3f}'.format(v)) for v in values)
 
     def updatePrevValues(self):
-        self.prevThrusts[self.prevLoc] = self.prevThrust
-        self.prevLoc = (self.prevLoc + 1) % len(self.prevThrusts)
+        self.prevThrusts[self.thrustCount] = self.prevThrust
+        self.thrustCount = (self.thrustCount + 1) % len(self.prevThrusts)
 
     def resetPrevValues(self):
         self.prevThrusts = [0] * len(self.prevThrusts)
-        self.prevLoc = 0
+        self.thrustCount = 0
 
     def averageThrust(self):
-        return sum(self.prevThrusts)/len(self.prevThrusts);
+        return sum(self.prevThrusts)/len(self.prevThrusts)
+
+    def updatePrevLocations(self):
+        self.prevLocations[self.locCount] = self.trackerPosition
+        self.locCount = (self.locCount + 1) % len(self.prevLocations)
+
+    def resetPrevLocations(self):
+        self.prevLocations = [Vector((0, 0, 0))] * len(self.prevLocations)
+        self.locCount = 0
+
+    def averageLocations(self):
+        return sum(self.prevLocations)*(1.0/len(self.prevLocations))
 
     def GetYPR(self, q):
         # q[0] = x, q[1] = y, q[2] = z, q[3] = w

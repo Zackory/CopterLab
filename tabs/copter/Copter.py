@@ -197,7 +197,9 @@ class Copter():
 
             # transform z,x to copter coords to calc pitch,roll
             # positive yaw is clockwise
-            correctedyaw = self.lastyaw + self.yawOffset
+            # correctedyaw = self.lastyaw + self.yawOffset
+            correctedyaw = self.lastyaw
+            # correctedyaw = self.trackerYPR[0]
             # print "lastyaw %.3f corrected %.3f" % (self.lastyaw,correctedyaw)
             c = math.cos(math.radians(correctedyaw))
             s = math.sin(math.radians(correctedyaw))

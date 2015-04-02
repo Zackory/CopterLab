@@ -46,15 +46,15 @@ from cfclient.ui.tab import Tab
 from cfclient.utils.logconfigreader import LogVariable, LogConfig
 
 logger = logging.getLogger(__name__)
-flight_tab_class = uic.loadUiType(sys.path[0] + "/cfclient/ui/tabs/copterTab.ui")[0]
+flight_tab_class = uic.loadUiType(sys.path[0] + '/../tabs/copterTab.ui')[0]
 
 MAX_THRUST = 65365.0
 
-from .copter.Vector import Vector
-from .copter.TelemetryLogger import TelemetryLogger
-from .copter.Rotor import Rotor
-from .copter.PIDrotor import PIDrotor
-from .copter.NatNet import NatNet
+from copter.Vector import Vector
+from copter.TelemetryLogger import TelemetryLogger
+from copter.Rotor import Rotor
+from copter.PIDrotor import PIDrotor
+from copter.NatNet import NatNet
 
 teleLog = TelemetryLogger()
 copter = PIDrotor()

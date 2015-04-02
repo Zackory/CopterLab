@@ -32,6 +32,7 @@ The main file for the Crazyflie control application.
 __author__ = 'Bitcraze AB'
 __all__ = ['MainUI']
 
+import os
 import sys
 import logging
 
@@ -53,17 +54,19 @@ from cfclient.utils.logconfigreader import (LogConfigReader,
                                             LogConfig)
 from cfclient.utils.config_manager import ConfigManager
 
+tabsPath = os.path.join(os.path.dirname(__file__), '../../../tabs')
+sys.path.append(tabsPath)
+
 import cfclient.ui.toolboxes
-import cfclient.ui.tabs
+import tabs
+# import cfclient.ui.tabs
 import cflib.crtp
 
 from cfclient.ui.dialogs.bootloader import BootloaderDialog
 from cfclient.ui.dialogs.about import AboutDialog
 
-(main_window_class,
-main_windows_base_class) = (uic.loadUiType(sys.path[0] +
-                                           '/cfclient/ui/main.ui'))
-
+# (main_window_class, main_windows_base_class) = (uic.loadUiType(sys.path[0] + '/cfclient/ui/main.ui'))
+(main_window_class, main_windows_base_class) = (uic.loadUiType(os.path.join(os.path.dirname(__file__), 'main.ui')))
 
 class MyDockWidget(QtGui.QDockWidget):
     closed = pyqtSignal()
@@ -210,7 +213,7 @@ class MainUI(QtGui.QMainWindow, main_window_class):
         self.tabsMenuItem.setMenu(QtGui.QMenu())
         tabItems = {}
         self.loadedTabs = []
-        for tabClass in cfclient.ui.tabs.available:
+        for tabClass in tabs.available:
             tab = tabClass(self.tabs, cfclient.ui.pluginhelper)
             item = QtGui.QAction(tab.getMenuName(), self)
             item.setCheckable(True)
@@ -228,6 +231,17 @@ class MainUI(QtGui.QMainWindow, main_window_class):
                     t.toggle()
         except Exception as e:
             logger.warning("Exception while opening tabs [%s]", e)
+
+
+        group = QActionGroup(self._menu_devices, exclusive=True)
+        node = QAction('yay', self._menu_devices, checkable=True)
+        # node.toggled.connect(self._inputdevice_selected)
+        group.addAction(node)
+        self._menu_devices.addAction(node)
+        self._menu_devices.actions()[0].setChecked(True)
+        # for c in self._menu_mappings.actions():
+        #     c.setEnabled(True)
+        # self._inputdevice_selected(True)
 
     def setUIState(self, newState, linkURI=""):
         self.uiState = newState
@@ -415,8 +429,9 @@ class MainUI(QtGui.QMainWindow, main_window_class):
                                            self._active_config))
 
     def _inputdevice_selected(self, checked):
-        if (not checked):
+        if not checked:
             return
+
         self.joystickReader.stopInput()
         sender = self.sender()
         self._active_device = sender.text()
@@ -447,6 +462,7 @@ class MainUI(QtGui.QMainWindow, main_window_class):
         group = QActionGroup(self._menu_devices, exclusive=True)
 
         for d in devs:
+            print 'devs: ', d
             node = QAction(d["name"], self._menu_devices, checkable=True)
             node.toggled.connect(self._inputdevice_selected)
             group.addAction(node)
@@ -468,12 +484,13 @@ class MainUI(QtGui.QMainWindow, main_window_class):
 
         # Now we know what device to use and what mapping, trigger the events
         # to change the menus and start the input
-        for c in self._menu_mappings.actions():
-            c.setEnabled(True)
-            if (c.text() == self._current_input_config):
-                c.setChecked(True)
+        # for c in self._menu_mappings.actions():
+        #     c.setEnabled(True)
+        #     if (c.text() == self._current_input_config):
+        #         c.setChecked(True)
 
         for c in self._menu_devices.actions():
+            print 'actions: ', c
             if (c.text() == self._active_device):
                 c.setChecked(True)
 

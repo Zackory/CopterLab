@@ -85,14 +85,11 @@ class PIDrotor():
         derivative = (error - self.prevError) * (1.0/dt)
         self.prevError = error
 
-        # print 'Error:', error, 'Integral:', self.integral, 'Derivative:', derivative
-
         # pid controller calculation
         # proportional: standard error that does most of the work
         # integral: adjusts for large errors (e.g. due to a nonsymmetric(heavy on one side) copter)
         # derivative: Smooths out path (e.g. removes oscillations)
         r = error*kp + self.integral*ki + derivative*kd
-        # print 'PID output: ', r
 
         # cos = math.cos(math.radians(self.yaw))
         # sin = math.sin(math.radians(self.yaw))
@@ -105,13 +102,28 @@ class PIDrotor():
         else:
             thrust = self.decreaseThrust + r.z
 
+
+        # Acceleration based PID controller
+        # rdes = error*kp + self.integral*ki - derivative*kd
+        # g = 9.81
+        # mass = 0.025
+        # kf = 0.001
+        # hoverThrust = 0.75
+        #
+        # roll = (rdes.x*sin - rdes.y*cos) * (1/g)
+        # pitch = (rdes.x*cos + rdes.y*sin) * (1/g)
+        # thrust = rdes.z * (mass / (8*kf*hoverThrust))
+        #
+        # print rdes, thrust
+
+
         # Place bounds on max values
         thrust = self.constrain(thrust, 0.0, 1.0)
-        roll = self.constrain(roll, -0.8, 0.8)
-        pitch = self.constrain(pitch, -0.8, 0.8)
+        # print 'Roll: %f, Pitch: %f' % (roll, pitch)
+        # roll = self.constrain(roll, -0.8, 0.8)
+        # pitch = self.constrain(pitch, -0.8, 0.8)
 
         self.prevThrust = thrust
-
         self.updatePrevValues()
 
         # Smooth landing
@@ -125,6 +137,26 @@ class PIDrotor():
             self.decreaseThrust = 0
             self.resetPrevValues()
 
+
+        # Barrel Roll
+        # if self.barrelRollStage == 1:
+        #     roll = 45
+        #     print abs(self.trackerYPR[1])
+        # if self.barrelRollStage == 1 and abs(self.trackerYPR[1]) >= 150:
+        #     print 'barrel roll complete'
+        #     self.barrelRollStage = 0
+
+
+        # Front Flip
+        # cosPos = (self.trackerYPR[1]/180.0) * math.pi/2.0
+        # if self.trackerYPR[1] < -5:
+        #     cosPos = math.pi/2.0 + (cosPos + math.pi/2.0)
+        # if self.barrelRollStage == 1:
+        #     pitch = 90 * math.cos(cosPos)
+        # if self.barrelRollStage == 1 and cosPos > math.pi*9/10.0:
+        #     self.barrelRollStage = 0
+
+
         # Log data
         if self.logCount % 5 == 0:
             self.logFile.write('(Output) thrust: %.3f, roll: %.3f, pitch: %.3f, yaw: %.3f \n\t(Input) targetPos: %s, trackerPos: %s, trackerVel: %s, trackerYPR: %s, copterYPR: %s\n' %
@@ -132,7 +164,6 @@ class PIDrotor():
 
         self.logCount = (self.logCount + 1) % 5
 
-        # print {"thrust": thrust, "roll": roll, "pitch": pitch, "yaw": 0}
         return {"thrust": thrust, "roll": roll, "pitch": pitch, "yaw": 0}
 
     def roundedTuple(self, values):

@@ -55,15 +55,14 @@ from cfclient.ui.tab import Tab
 
 from cfclient.utils.logconfigreader import LogVariable, LogConfig
 
-flight_tab_class = uic.loadUiType(sys.path[0] +
-                                  "/cfclient/ui/tabs/autoflightTab.ui")[0]
+flight_tab_class = uic.loadUiType(sys.path[0] + '/../tabs/autoflightTab.ui')[0]
 
 MAX_THRUST = 65365.0
 
-from .copter.Vector import Vector
-from .copter.TelemetryLogger import TelemetryLogger
-from .copter.Copter import Copter
-from .copter.NatNet import NatNet
+from copter.Vector import Vector
+from copter.TelemetryLogger import TelemetryLogger
+from copter.Copter import Copter
+from copter.NatNet import NatNet
 
 teleLog = TelemetryLogger()
 copter = Copter()
@@ -419,8 +418,8 @@ class AutoFlightTab(Tab, flight_tab_class):
                                   self.thrustToPercentage(
                                       data["stabilizer.thrust"]))
 
-        self.ai.setRollPitch(-data["stabilizer.roll"],
-                             data["stabilizer.pitch"])
+        # self.ai.setRollPitch(-data["stabilizer.roll"],
+        #                      data["stabilizer.pitch"])
 
         """
         ADDITION
@@ -546,6 +545,8 @@ class AutoFlightTab(Tab, flight_tab_class):
         self.RigidCnt.setText("%d" % copter.rigidCnt)
         self.SinglesCnt.setText("%d" % copter.singlesCnt)
         self.UpdateRate.setText("%.1f / sec" % copter.updateRate())
+
+        self.ai.setRollPitch(-copter.trackerYPR[2], copter.trackerYPR[1])
 
     def setMotorLabelsEnabled(self, enabled):
         self.M1label.setEnabled(enabled)

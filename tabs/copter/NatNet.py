@@ -43,7 +43,6 @@ class NatNet():
                     #        print "frame:", framenum
                     #        for i in range(len(bodies)):
                     #          print "body:", i, "pos:", bodies[i]["pos"], "orient:", bodies[i]["orient"]
-                    # copter.updateTracking(framenum,bodies[0]["pos"],bodies[0]["orient"])
                     copter.updateTracking(framenum, bodies, unknown)
             except socket.timeout:
                 # print 'pinging'
@@ -105,10 +104,12 @@ class NatNet():
             bodymarkercnt, = struct.unpack("@i", data[mark:mark+4])
             mark += 4
             mark += bodymarkercnt * (12 + 4 + 4)
-            markererr, = struct.unpack("@f", data[mark:mark+4])
+            markererr = struct.unpack("@f", data[mark:mark+4])
             mark += 4
-            # print "\tBody Id:", bodyid, "pos:", x, y, z, "orient:", a, b, c, d, "marker err:", markererr
-            bodies.append(dict(pos=(x, y, z), orient=(a, b, c, d)))
+            trackingValid = struct.unpack("@h", data[mark:mark+2])
+            mark += 2
+            # print "\tBody Id:", bodyid, "pos:", x, y, z, "orient:", a, b, c, d, 'marker count:', bodymarkercnt # "marker err:", markererr
+            bodies.append(dict(pos=(x, y, z), orient=(a, b, c, d), id=bodyid))
             i -= 1
 
         return framenum, bodies, unknown

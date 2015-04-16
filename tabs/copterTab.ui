@@ -322,7 +322,7 @@
     <string>Reset Target</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="barrelRoll">
+  <widget class="QPushButton" name="ballCatch">
    <property name="geometry">
     <rect>
      <x>300</x>
@@ -332,7 +332,20 @@
     </rect>
    </property>
    <property name="text">
-    <string>Barrel Roll</string>
+    <string>Ball Catch</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="rose">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>130</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Rose</string>
    </property>
   </widget>
  </widget>

@@ -44,6 +44,16 @@ class PIDrotor():
         self.barrelRollStage = 0
         self.lastRoll = 0
 
+        # Rose
+        self.basePosition = Vector((0, 0, 0))
+        self.isRosing = False
+        self.roseCount = 0
+
+        # Ball Catching
+        self.ballPosition = Vector((0, 0, 0))
+        self.ballVelocity = Vector((0, 0, 0))
+        self.ballCatch = False
+
         # Logging
         self.logFile = None
         self.logCount = 0
@@ -71,12 +81,25 @@ class PIDrotor():
             # We're going to be decreasing thrust now.
             # Save the current thrust for use as a baseline for the PID controller.
             self.decreaseThrust = self.averageThrust()
+            # Reset all variables
+            self.ballCatch = False
+            self.isRosing = False
+
+        if self.ballCatch:
+            targetPosition = Vector((self.ballPosition.x, self.ballPosition.y, self.targetPosition.z))
+        elif self.isRosing:
+            targetPosition = self.calcRose()
+        else:
+            targetPosition = self.targetPosition
 
         # PID Controller
         kp = 1.0
-        ki = 0.01
-        kd = 0.5
-        error = self.targetPosition - self.trackerPosition
+        if self.ballCatch:
+            ki = 0.2
+        else:
+            ki = 0.05
+        kd = 1.0
+        error = targetPosition - self.trackerPosition
         if self.prevError is None:
             self.prevError = error
         dt = time() - self.prevTime
@@ -160,7 +183,7 @@ class PIDrotor():
         # Log data
         if self.logCount % 5 == 0:
             self.logFile.write('(Output) thrust: %.3f, roll: %.3f, pitch: %.3f, yaw: %.3f \n\t(Input) targetPos: %s, trackerPos: %s, trackerVel: %s, trackerYPR: %s, copterYPR: %s\n' %
-                               (thrust, roll, pitch, 0, self.roundedTuple(self.targetPosition), self.roundedTuple(self.trackerPosition), self.roundedTuple(self.velocity), self.roundedTuple(self.trackerYPR), self.roundedTuple((self.yaw, self.pitch, self.roll))))
+                               (thrust, roll, pitch, 0, self.roundedTuple(targetPosition), self.roundedTuple(self.trackerPosition), self.roundedTuple(self.velocity), self.roundedTuple(self.trackerYPR), self.roundedTuple((self.yaw, self.pitch, self.roll))))
 
         self.logCount = (self.logCount + 1) % 5
 
@@ -224,9 +247,25 @@ class PIDrotor():
 
         return yaw, pitch, roll
 
-    def performBarrelRoll(self):
-        self.barrelRoll = True
-        self.barrelRollStage = 1
+    def catchBall(self):
+        self.ballCatch = not self.ballCatch
+        # self.barrelRoll = True
+        # self.barrelRollStage = 1
+
+    def rose(self):
+        self.isRosing = not self.isRosing
+        self.basePosition = self.trackerPosition
+
+    def calcRose(self):
+        period = 720.0 * 6
+        self.roseCount = (self.roseCount + 1) % period
+
+        theta = self.roseCount / float(period) * 2 * math.pi
+        rad = 0.5 * math.sin(3 * theta)
+        point = self.basePosition + Vector((rad * math.cos(theta), rad * math.sin(theta), 0))
+
+        print 'rose point:', point
+        return point
 
     def setTargetX(self, x):
         self.targetPosition = Vector((x, self.targetPosition.y, self.targetPosition.z))
@@ -259,11 +298,11 @@ class PIDrotor():
             return
 
         if len(bodies) == 0:
-            print "no bodies - not tracking"
+            print 'no bodies - not tracking'
             return
 
-        position = bodies[0]["pos"]
-        orientation = bodies[0]["orient"]
+        position = bodies[0]['pos']
+        orientation = bodies[0]['orient']
         correctPosition = self.correctPosition(position)
 
         self.velocity = (correctPosition - self.trackerPosition) * (120 / float(timediff))
@@ -272,3 +311,8 @@ class PIDrotor():
         self.trackerPosition = correctPosition
         self.trackerOrientation = orientation
         self.trackerYPR = self.GetYPR(orientation)
+
+        if len(bodies) >= 2:
+            ballPos = self.correctPosition(bodies[1]['pos'])
+            self.ballVelocity = (ballPos - self.ballPosition) * (120 / float(timediff))
+            self.ballPosition = ballPos

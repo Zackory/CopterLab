@@ -140,7 +140,8 @@ class CopterTab(Tab, flight_tab_class):
 
         # Connect UI signals that are in this tab
         self.launchButton.clicked.connect(self.launchButtonClick)
-        self.barrelRoll.clicked.connect(self.barrelRollClick)
+        self.ballCatch.clicked.connect(self.ballCatchClick)
+        self.rose.clicked.connect(self.roseClick)
         self.thrustEntry.valueChanged.connect(self.thrustChanged)
         self.targetX.valueChanged.connect(self.targetXChanged)
         self.targetY.valueChanged.connect(self.targetYChanged)
@@ -150,21 +151,7 @@ class CopterTab(Tab, flight_tab_class):
         self.lastUIUpdate = time()
         self.isConnected = False
 
-        # Reset Config settings
-        # Config().set('min_thrust', 0.0)
-        # Config().set('max_thrust', 100.0)
-        # Config().set("slew_limit", 0)
-        # Config().set("slew_rate", 0)
-        # Config().set("max_yaw", 200)
-        # Config().set("max_rp", 30)
-        # Config().set("trim_pitch", 0)
-        # Config().set("trim_roll", 0)
-        # Config().set("flightmode", 'Client X-mode')
-        # Config().set("client_side_xmode", True)
-
-        """
-          ADDITION: replace joy stick object's input device with our wrapper class
-        """
+        # Replace joy stick object's input device with our wrapper class
         print "AutoFlightTab wrapping device"
         d = self.helper.inputDeviceReader.inputdevice
         w = DeviceWrapper(d)
@@ -178,9 +165,7 @@ class CopterTab(Tab, flight_tab_class):
         self.helper.inputDeviceReader.update_trim_pitch_signal.emit(0)
         self.helper.inputDeviceReader.update_trim_roll_signal.emit(0)
 
-        """
-          ADDITION: create thread to run command socket
-        """
+        # Create thread to run NatNet socket
         cmdthread = threading.Thread(target=natnet.manage_cmd_socket, args=[copter])
         cmdthread.setDaemon(True)
         cmdthread.start()
@@ -210,21 +195,27 @@ class CopterTab(Tab, flight_tab_class):
         # self.helper.inputDeviceReader.inputdevice.automode = not self.helper.inputDeviceReader.inputdevice.automode
 
     @pyqtSlot()
-    def barrelRollClick(self):
+    def ballCatchClick(self):
         global copter
-        copter.performBarrelRoll()
+        copter.catchBall()
+
+    @pyqtSlot()
+    def roseClick(self):
+        global copter
+        print 'rose clicked'
+        copter.rose()
 
     @pyqtSlot()
     def resetTargetClick(self):
         global copter
         copter.resetTarget()
         copter.yawOffset = copter.trackerYPR[0] - copter.yaw
-        self.targetX.setValue(copter.targetPosition.x)
-        self.targetY.setValue(copter.targetPosition.y)
+        self.targetX.setValue(copter.trackerPosition.x)
+        self.targetY.setValue(copter.trackerPosition.y)
         # self.targetY.setValue(copter.targetPosition.y + 0.4)
         # self.targetYChanged()
         # self.targetZ.setValue(copter.targetPosition.z)
-        self.targetZ.setValue(copter.targetPosition.z + 0.4)
+        self.targetZ.setValue(copter.trackerPosition.z + 0.2)
         self.targetZChanged()
 
     @pyqtSlot()

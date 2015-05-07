@@ -338,7 +338,7 @@
   <widget class="QPushButton" name="rose">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>30</x>
      <y>130</y>
      <width>98</width>
      <height>27</height>
@@ -346,6 +346,19 @@
    </property>
    <property name="text">
     <string>Rose</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="spline">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>130</y>
+     <width>98</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Spline</string>
    </property>
   </widget>
  </widget>

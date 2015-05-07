@@ -3,6 +3,7 @@ import math
 from time import time
 from Vector import Vector
 from datetime import datetime
+from SplineTrajectory import SplineTrajectory
 
 __author__ = 'CopterLab'
 
@@ -49,6 +50,10 @@ class PIDrotor():
         self.isRosing = False
         self.roseCount = 0
 
+        # Spline trajectory
+        self.isSplineing = False;
+        self.spline = SplineTrajectory()
+
         # Ball Catching
         self.ballPosition = Vector((0, 0, 0))
         self.ballVelocity = Vector((0, 0, 0))
@@ -85,10 +90,13 @@ class PIDrotor():
             self.ballCatch = False
             self.isRosing = False
 
+        # Update target position based on a current action or trajectory
         if self.ballCatch:
             targetPosition = Vector((self.ballPosition.x, self.ballPosition.y, self.targetPosition.z))
         elif self.isRosing:
             targetPosition = self.calcRose()
+        elif self.isSplineing:
+            targetPosition = self.spline.nextPoint()
         else:
             targetPosition = self.targetPosition
 
@@ -162,6 +170,8 @@ class PIDrotor():
 
 
         # Barrel Roll
+        # Don't do this! (it doesn't work yet)
+
         # if self.barrelRollStage == 1:
         #     roll = 45
         #     print abs(self.trackerYPR[1])
@@ -171,6 +181,8 @@ class PIDrotor():
 
 
         # Front Flip
+        # Don't do this! (its not working yet)
+
         # cosPos = (self.trackerYPR[1]/180.0) * math.pi/2.0
         # if self.trackerYPR[1] < -5:
         #     cosPos = math.pi/2.0 + (cosPos + math.pi/2.0)
@@ -213,6 +225,11 @@ class PIDrotor():
 
     def averageLocations(self):
         return sum(self.prevLocations)*(1.0/len(self.prevLocations))
+
+    def splineTrajectory(self):
+        self.isSplineing = not self.isSplineing
+        self.basePosition = self.trackerPosition
+        self.spline.buildSpline(1000)
 
     def GetYPR(self, q):
         # q[0] = x, q[1] = y, q[2] = z, q[3] = w

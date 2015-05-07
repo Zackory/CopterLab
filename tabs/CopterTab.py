@@ -142,6 +142,7 @@ class CopterTab(Tab, flight_tab_class):
         self.launchButton.clicked.connect(self.launchButtonClick)
         self.ballCatch.clicked.connect(self.ballCatchClick)
         self.rose.clicked.connect(self.roseClick)
+        self.spline.clicked.connect(self.splineClick)
         self.thrustEntry.valueChanged.connect(self.thrustChanged)
         self.targetX.valueChanged.connect(self.targetXChanged)
         self.targetY.valueChanged.connect(self.targetYChanged)
@@ -202,8 +203,12 @@ class CopterTab(Tab, flight_tab_class):
     @pyqtSlot()
     def roseClick(self):
         global copter
-        print 'rose clicked'
         copter.rose()
+
+    @pyqtSlot()
+    def splineClick(self):
+        global copter
+        copter.splineTrajectory()
 
     @pyqtSlot()
     def resetTargetClick(self):
@@ -215,7 +220,7 @@ class CopterTab(Tab, flight_tab_class):
         # self.targetY.setValue(copter.targetPosition.y + 0.4)
         # self.targetYChanged()
         # self.targetZ.setValue(copter.targetPosition.z)
-        self.targetZ.setValue(copter.trackerPosition.z + 0.2)
+        self.targetZ.setValue(copter.trackerPosition.z + 0.1)
         self.targetZChanged()
 
     @pyqtSlot()
